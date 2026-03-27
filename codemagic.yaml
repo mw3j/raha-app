@@ -19,9 +19,6 @@ workflows:
       - name: Build web app
         script: pnpm --filter @workspace/raha run build
 
-      - name: Install Capacitor CLI
-        script: cd artifacts/raha && pnpm add -D @capacitor/cli
-
       - name: Sync Capacitor Android
         script: cd artifacts/raha && npx cap sync android
 
@@ -40,12 +37,3 @@ workflows:
 
     artifacts:
       - artifacts/raha/android/app/build/outputs/bundle/release/app-release.aab
-      - artifacts/raha/android/app/build/outputs/apk/debug/*.apk
-
-    publishing:
-      email:
-        recipients:
-          - $CM_EMAIL
-        notify:
-          success: true
-          failure: true
