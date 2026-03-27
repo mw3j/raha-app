@@ -10,11 +10,13 @@ workflows:
       groups:
         - keystore_credentials
     scripts:
-      - name: Install pnpm
-        script: npm install -g pnpm@9
+      - name: Setup pnpm
+        script: |
+          which pnpm || npm install -g pnpm@9
+          pnpm --version
 
       - name: Install dependencies
-        script: pnpm install --frozen-lockfile
+        script: pnpm install --no-frozen-lockfile
 
       - name: Build web app
         script: pnpm --filter @workspace/raha run build
@@ -33,7 +35,7 @@ workflows:
           KEYSTORE_PASSWORD=$CM_KEYSTORE_PASSWORD \
           KEY_ALIAS=$CM_KEY_ALIAS \
           KEY_PASSWORD=$CM_KEY_PASSWORD \
-          ./gradlew bundleRelease
+          ./gradlew bundleRelease --no-daemon
 
     artifacts:
       - artifacts/raha/android/app/build/outputs/bundle/release/app-release.aab
