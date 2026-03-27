@@ -39,6 +39,7 @@ workflows:
       - name: Build Release AAB
         script: |
           cd artifacts/raha/android
+          chmod +x gradlew
           KEYSTORE_PATH=/tmp/raha-release.p12 \
           KEYSTORE_PASSWORD=$CM_KEYSTORE_PASSWORD \
           KEY_ALIAS=$CM_KEY_ALIAS \
