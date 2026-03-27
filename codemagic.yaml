@@ -7,22 +7,31 @@ workflows:
       node: 20
       vars:
         PACKAGE_NAME: "com.raha.islamic"
+        COREPACK_ENABLE_STRICT: "0"
+        PNPM_HOME: "/usr/local/bin"
       groups:
         - keystore_credentials
     scripts:
       - name: Setup pnpm
         script: |
-          which pnpm || npm install -g pnpm@9
+          export COREPACK_ENABLE_STRICT=0
+          npm install -g pnpm@9 --force
           pnpm --version
 
       - name: Install dependencies
-        script: pnpm install --no-frozen-lockfile
+        script: |
+          export COREPACK_ENABLE_STRICT=0
+          pnpm install --no-frozen-lockfile
 
       - name: Build web app
-        script: pnpm --filter @workspace/raha run build
+        script: |
+          export COREPACK_ENABLE_STRICT=0
+          pnpm --filter @workspace/raha run build
 
       - name: Sync Capacitor Android
-        script: cd artifacts/raha && npx cap sync android
+        script: |
+          export COREPACK_ENABLE_STRICT=0
+          cd artifacts/raha && npx cap sync android
 
       - name: Set up keystore
         script: |
