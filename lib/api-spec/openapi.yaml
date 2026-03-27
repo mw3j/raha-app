@@ -1,0 +1,912 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: RAHA Islamic App API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: auth
+    description: Authentication operations
+  - name: quran
+    description: Quran operations
+  - name: prayer
+    description: Prayer times operations
+  - name: posts
+    description: Islamic posts operations
+  - name: admin
+    description: Admin operations
+  - name: users
+    description: User operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /auth/register:
+    post:
+      operationId: register
+      tags: [auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "201":
+          description: User registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current user
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/update-profile:
+    put:
+      operationId: updateProfile
+      tags: [auth]
+      summary: Update user profile
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateProfileRequest"
+      responses:
+        "200":
+          description: Profile updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /auth/change-password:
+    put:
+      operationId: changePassword
+      tags: [auth]
+      summary: Change password
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangePasswordRequest"
+      responses:
+        "200":
+          description: Password changed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /quran/surahs:
+    get:
+      operationId: getSurahs
+      tags: [quran]
+      summary: Get all surahs
+      responses:
+        "200":
+          description: List of surahs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Surah"
+
+  /quran/surahs/{surahNumber}:
+    get:
+      operationId: getSurah
+      tags: [quran]
+      summary: Get a surah with verses
+      parameters:
+        - name: surahNumber
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Surah with verses
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SurahDetail"
+
+  /quran/search:
+    get:
+      operationId: searchQuran
+      tags: [quran]
+      summary: Search Quran
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: lang
+          in: query
+          required: false
+          schema:
+            type: string
+            default: "ar"
+      responses:
+        "200":
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SearchResult"
+
+  /quran/reading-progress:
+    get:
+      operationId: getReadingProgress
+      tags: [quran]
+      summary: Get reading progress
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Reading progress
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadingProgress"
+    put:
+      operationId: updateReadingProgress
+      tags: [quran]
+      summary: Update reading progress
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateReadingProgressRequest"
+      responses:
+        "200":
+          description: Progress updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadingProgress"
+
+  /prayer/times:
+    get:
+      operationId: getPrayerTimes
+      tags: [prayer]
+      summary: Get prayer times
+      parameters:
+        - name: latitude
+          in: query
+          required: true
+          schema:
+            type: number
+        - name: longitude
+          in: query
+          required: true
+          schema:
+            type: number
+        - name: method
+          in: query
+          required: false
+          schema:
+            type: string
+            default: "MWL"
+        - name: date
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Prayer times
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrayerTimes"
+
+  /prayer/methods:
+    get:
+      operationId: getPrayerMethods
+      tags: [prayer]
+      summary: Get available calculation methods
+      responses:
+        "200":
+          description: List of methods
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PrayerMethod"
+
+  /posts:
+    get:
+      operationId: getPosts
+      tags: [posts]
+      summary: Get all published posts
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+      responses:
+        "200":
+          description: List of posts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PostsResponse"
+    post:
+      operationId: createPost
+      tags: [posts]
+      summary: Create a new post (admin only)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePostRequest"
+      responses:
+        "201":
+          description: Post created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Post"
+
+  /posts/{postId}:
+    get:
+      operationId: getPost
+      tags: [posts]
+      summary: Get a post by ID
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Post detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Post"
+    put:
+      operationId: updatePost
+      tags: [posts]
+      summary: Update a post (admin only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePostRequest"
+      responses:
+        "200":
+          description: Post updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Post"
+    delete:
+      operationId: deletePost
+      tags: [posts]
+      summary: Delete a post (admin only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Post deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /admin/users:
+    get:
+      operationId: getUsers
+      tags: [admin]
+      summary: Get all users (admin only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: List of users
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UsersResponse"
+
+  /admin/users/{userId}/toggle-active:
+    put:
+      operationId: toggleUserActive
+      tags: [admin]
+      summary: Toggle user active status (admin only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: User status toggled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /admin/users/{userId}/make-admin:
+    put:
+      operationId: makeUserAdmin
+      tags: [admin]
+      summary: Make user admin (admin only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: User made admin
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /admin/stats:
+    get:
+      operationId: getAdminStats
+      tags: [admin]
+      summary: Get admin statistics (admin only)
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Admin statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminStats"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+      required:
+        - error
+
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+
+    RegisterRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 6
+      required:
+        - name
+        - email
+        - password
+
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+      required:
+        - email
+        - password
+
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+      required:
+        - token
+        - user
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        avatar:
+          type: string
+          nullable: true
+        role:
+          type: string
+          enum: [user, admin, superadmin]
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - email
+        - role
+        - isActive
+        - createdAt
+
+    UpdateProfileRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        avatar:
+          type: string
+          nullable: true
+
+    ChangePasswordRequest:
+      type: object
+      properties:
+        currentPassword:
+          type: string
+        newPassword:
+          type: string
+          minLength: 6
+      required:
+        - currentPassword
+        - newPassword
+
+    Surah:
+      type: object
+      properties:
+        number:
+          type: integer
+        name:
+          type: string
+        englishName:
+          type: string
+        englishNameTranslation:
+          type: string
+        revelationType:
+          type: string
+        numberOfAyahs:
+          type: integer
+      required:
+        - number
+        - name
+        - englishName
+        - englishNameTranslation
+        - revelationType
+        - numberOfAyahs
+
+    Verse:
+      type: object
+      properties:
+        number:
+          type: integer
+        numberInSurah:
+          type: integer
+        text:
+          type: string
+        translation:
+          type: string
+          nullable: true
+        tafsir:
+          type: string
+          nullable: true
+      required:
+        - number
+        - numberInSurah
+        - text
+
+    SurahDetail:
+      type: object
+      properties:
+        number:
+          type: integer
+        name:
+          type: string
+        englishName:
+          type: string
+        englishNameTranslation:
+          type: string
+        revelationType:
+          type: string
+        numberOfAyahs:
+          type: integer
+        verses:
+          type: array
+          items:
+            $ref: "#/components/schemas/Verse"
+      required:
+        - number
+        - name
+        - englishName
+        - englishNameTranslation
+        - revelationType
+        - numberOfAyahs
+        - verses
+
+    SearchResult:
+      type: object
+      properties:
+        surahNumber:
+          type: integer
+        surahName:
+          type: string
+        verseNumber:
+          type: integer
+        text:
+          type: string
+        translation:
+          type: string
+          nullable: true
+      required:
+        - surahNumber
+        - surahName
+        - verseNumber
+        - text
+
+    ReadingProgress:
+      type: object
+      properties:
+        userId:
+          type: integer
+        lastSurah:
+          type: integer
+        lastVerse:
+          type: integer
+        completedSurahs:
+          type: array
+          items:
+            type: integer
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - userId
+        - lastSurah
+        - lastVerse
+        - completedSurahs
+
+    UpdateReadingProgressRequest:
+      type: object
+      properties:
+        lastSurah:
+          type: integer
+        lastVerse:
+          type: integer
+        completedSurah:
+          type: integer
+          nullable: true
+
+    PrayerTimes:
+      type: object
+      properties:
+        date:
+          type: string
+        location:
+          type: string
+        method:
+          type: string
+        fajr:
+          type: string
+        sunrise:
+          type: string
+        dhuhr:
+          type: string
+        asr:
+          type: string
+        sunset:
+          type: string
+        maghrib:
+          type: string
+        isha:
+          type: string
+        midnight:
+          type: string
+      required:
+        - date
+        - fajr
+        - sunrise
+        - dhuhr
+        - asr
+        - sunset
+        - maghrib
+        - isha
+
+    PrayerMethod:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        nameAr:
+          type: string
+      required:
+        - id
+        - name
+        - nameAr
+
+    Post:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        content:
+          type: string
+        category:
+          type: string
+        imageUrl:
+          type: string
+          nullable: true
+        authorId:
+          type: integer
+        authorName:
+          type: string
+        isPublished:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - content
+        - category
+        - authorId
+        - authorName
+        - isPublished
+        - createdAt
+        - updatedAt
+
+    CreatePostRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        category:
+          type: string
+        imageUrl:
+          type: string
+          nullable: true
+        isPublished:
+          type: boolean
+          default: true
+      required:
+        - title
+        - content
+        - category
+
+    UpdatePostRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        category:
+          type: string
+        imageUrl:
+          type: string
+          nullable: true
+        isPublished:
+          type: boolean
+
+    PostsResponse:
+      type: object
+      properties:
+        posts:
+          type: array
+          items:
+            $ref: "#/components/schemas/Post"
+        total:
+          type: integer
+        page:
+          type: integer
+        totalPages:
+          type: integer
+      required:
+        - posts
+        - total
+        - page
+        - totalPages
+
+    UsersResponse:
+      type: object
+      properties:
+        users:
+          type: array
+          items:
+            $ref: "#/components/schemas/User"
+        total:
+          type: integer
+        page:
+          type: integer
+        totalPages:
+          type: integer
+      required:
+        - users
+        - total
+        - page
+        - totalPages
+
+    AdminStats:
+      type: object
+      properties:
+        totalUsers:
+          type: integer
+        activeUsers:
+          type: integer
+        totalPosts:
+          type: integer
+        publishedPosts:
+          type: integer
+        newUsersThisMonth:
+          type: integer
+      required:
+        - totalUsers
+        - activeUsers
+        - totalPosts
+        - publishedPosts
+        - newUsersThisMonth

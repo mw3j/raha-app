@@ -1,0 +1,37 @@
+modules = ["nodejs-24", "postgresql-16"]
+
+[[artifacts]]
+id = "artifacts/api-server"
+
+[[artifacts]]
+id = "artifacts/mockup-sandbox"
+
+[deployment]
+router = "application"
+deploymentTarget = "autoscale"
+
+[deployment.postBuild]
+args = ["pnpm", "store", "prune"]
+env = { "CI" = "true" }
+
+[workflows]
+runButton = "Project"
+
+[agent]
+stack = "PNPM_WORKSPACE"
+expertMode = true
+
+[postMerge]
+path = "scripts/post-merge.sh"
+timeoutMs = 20000
+
+[nix]
+channel = "stable-25_05"
+
+[userenv]
+
+[userenv.shared]
+GOOGLE_CLIENT_ID = "588066573184-jkprarjollbqgep5ks441pbt20h93l2l.apps.googleusercontent.com"
+VITE_GOOGLE_CLIENT_ID = "588066573184-jkprarjollbqgep5ks441pbt20h93l2l.apps.googleusercontent.com"
+FACEBOOK_APP_ID = "1659916948758146"
+FACEBOOK_ORIGIN = "https://islamic-hub-aura--procardezo.replit.app"
