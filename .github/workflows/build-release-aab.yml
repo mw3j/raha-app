@@ -1,0 +1,91 @@
+name: Build Release AAB (Play Store)
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version_code:
+        description: 'Version Code (integer, e.g. 1, 2, 3...)'
+        required: true
+        default: '1'
+      version_name:
+        description: 'Version Name (e.g. 1.0.0)'
+        required: true
+        default: '1.0.0'
+
+jobs:
+  build:
+    name: Build Signed AAB
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build web app
+        run: pnpm --filter @workspace/raha run build
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+
+      - name: Sync Capacitor
+        run: |
+          cd artifacts/raha
+          npx cap sync android
+
+      - name: Update version in build.gradle
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          sed -i "s/versionCode 1/versionCode ${{ github.event.inputs.version_code }}/" artifacts/raha/android/app/build.gradle
+          sed -i 's/versionName "1.0"/versionName "${{ github.event.inputs.version_name }}"/' artifacts/raha/android/app/build.gradle
+
+      - name: Decode Keystore
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > /tmp/raha-release.p12
+
+      - name: Build Release AAB
+        working-directory: artifacts/raha/android
+        run: ./gradlew bundleRelease
+        env:
+          KEYSTORE_PATH: /tmp/raha-release.p12
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+
+      - name: Upload AAB Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: raha-release-aab
+          path: artifacts/raha/android/app/build/outputs/bundle/release/app-release.aab
+          retention-days: 30
+
+      - name: Build Debug APK (for testing)
+        working-directory: artifacts/raha/android
+        run: ./gradlew assembleDebug
+
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: raha-debug-apk
+          path: artifacts/raha/android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 7
