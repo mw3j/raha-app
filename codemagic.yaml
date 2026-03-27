@@ -4,11 +4,10 @@ workflows:
     max_build_duration: 60
     environment:
       java: 17
-      node: 20
+      node: 22
       vars:
         PACKAGE_NAME: "com.raha.islamic"
         COREPACK_ENABLE_STRICT: "0"
-        PNPM_HOME: "/usr/local/bin"
       groups:
         - keystore_credentials
     scripts:
