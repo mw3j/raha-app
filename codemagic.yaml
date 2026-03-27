@@ -35,15 +35,16 @@ workflows:
       - name: Set up keystore
         script: |
           echo $CM_KEYSTORE | base64 --decode > /tmp/raha-release.p12
+          ls -la /tmp/raha-release.p12
 
       - name: Build Release AAB
         script: |
+          export KEYSTORE_PATH=/tmp/raha-release.p12
+          export KEYSTORE_PASSWORD=$CM_KEYSTORE_PASSWORD
+          export KEY_ALIAS=$CM_KEY_ALIAS
+          export KEY_PASSWORD=$CM_KEY_PASSWORD
           cd artifacts/raha/android
           chmod +x gradlew
-          KEYSTORE_PATH=/tmp/raha-release.p12 \
-          KEYSTORE_PASSWORD=$CM_KEYSTORE_PASSWORD \
-          KEY_ALIAS=$CM_KEY_ALIAS \
-          KEY_PASSWORD=$CM_KEY_PASSWORD \
           ./gradlew bundleRelease --no-daemon
 
     artifacts:
