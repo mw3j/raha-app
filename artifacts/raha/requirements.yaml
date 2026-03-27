@@ -1,0 +1,18 @@
+packages:
+  "framer-motion": "For smooth page transitions and beautiful staggered list animations"
+  "date-fns": "For formatting prayer times and standardizing dates"
+  "clsx": "For conditional class names in UI components"
+  "tailwind-merge": "For merging tailwind classes in UI components safely"
+  "jwt-decode": "For parsing the JWT token to get user info if needed"
+
+images:
+  - path: "artifacts/raha/public/images/islamic-pattern.png"
+    description: "Elegant, premium, minimal Islamic geometric pattern background, deep emerald green and soft gold, subtle gradients, abstract, high quality, luxury feel"
+    aspect_ratio: "16:9"
+  - path: "artifacts/raha/public/images/logo.png"
+    description: "Modern, minimal logo for an Islamic app named RAHA, featuring a stylized crescent moon and elegant Arabic calligraphy vibe, gold on transparent or dark green background"
+    aspect_ratio: "1:1"
+
+notes:
+  - Assuming customFetch in @workspace/api-client-react automatically reads the `raha_token` from localStorage for Authorization headers
+  - App is RTL by default, Tailwind physical properties (ml, mr) should be replaced with logical (ms, me) or tailored for RTL

@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "RAHA - تطبيق راحة"
+version = "1.0.0"
+id = "artifacts/raha"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18300
+
+[services.development]
+run = "pnpm --filter @workspace/raha run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/raha", "run", "build" ]
+publicDir = "artifacts/raha/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18300"
+BASE_PATH = "/"
