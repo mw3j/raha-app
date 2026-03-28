@@ -46,9 +46,12 @@ workflows:
           cd artifacts/raha/android
           chmod +x gradlew
           ./gradlew bundleRelease --no-daemon
-          echo "--- AAB location ---"
-          find . -name "*.aab" 2>/dev/null
+          echo "=== Listing all AAB files ==="
+          find . -name "*.aab" -type f
+          echo "=== Copying release AAB to root ==="
+          cp app/build/outputs/bundle/release/app-release.aab $CM_BUILD_DIR/raha-release.aab
+          echo "=== Final AAB ==="
+          ls -la $CM_BUILD_DIR/raha-release.aab
 
     artifacts:
-      - "**/*.aab"
-      - "**/*.apk"
+      - raha-release.aab
