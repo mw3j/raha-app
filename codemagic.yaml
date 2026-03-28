@@ -34,24 +34,19 @@ workflows:
 
       - name: Set up keystore
         script: |
-          echo $CM_KEYSTORE | base64 --decode > /tmp/raha-release.p12
-          ls -la /tmp/raha-release.p12
+          echo $CM_KEYSTORE | base64 --decode > /tmp/raha-release.jks
+          ls -la /tmp/raha-release.jks
 
       - name: Build Release AAB
         script: |
-          export KEYSTORE_PATH=/tmp/raha-release.p12
+          export KEYSTORE_PATH=/tmp/raha-release.jks
           export KEYSTORE_PASSWORD=$CM_KEYSTORE_PASSWORD
           export KEY_ALIAS=$CM_KEY_ALIAS
           export KEY_PASSWORD=$CM_KEY_PASSWORD
           cd artifacts/raha/android
           chmod +x gradlew
           ./gradlew bundleRelease --no-daemon
-          echo "=== Listing all AAB files ==="
-          find . -name "*.aab" -type f
-          echo "=== Copying release AAB to root ==="
           cp app/build/outputs/bundle/release/app-release.aab $CM_BUILD_DIR/raha-release.aab
-          echo "=== Final AAB ==="
-          ls -la $CM_BUILD_DIR/raha-release.aab
 
     artifacts:
       - raha-release.aab
