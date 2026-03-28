@@ -8,6 +8,9 @@ workflows:
       vars:
         PACKAGE_NAME: "com.raha.islamic"
         COREPACK_ENABLE_STRICT: "0"
+        CM_KEY_ALIAS: "raha_key"
+        CM_KEYSTORE_PASSWORD: "raha2026Secure"
+        CM_KEY_PASSWORD: "raha2026Secure"
       groups:
         - keystore_credentials
     scripts:
@@ -32,20 +35,29 @@ workflows:
           export COREPACK_ENABLE_STRICT=0
           cd artifacts/raha && npx cap sync android
 
-      - name: Set up keystore
+      - name: Generate keystore
         script: |
-          echo $CM_KEYSTORE | base64 --decode > /tmp/raha-release.jks
+          keytool -genkey -v \
+            -keystore /tmp/raha-release.jks \
+            -alias raha_key \
+            -keyalg RSA -keysize 2048 -validity 10000 \
+            -storepass raha2026Secure \
+            -keypass raha2026Secure \
+            -storetype JKS \
+            -dname "CN=RAHA App, OU=Dev, O=RAHA, L=Unknown, ST=Unknown, C=US"
+          echo "Keystore created:"
           ls -la /tmp/raha-release.jks
 
       - name: Build Release AAB
         script: |
           export KEYSTORE_PATH=/tmp/raha-release.jks
-          export KEYSTORE_PASSWORD=$CM_KEYSTORE_PASSWORD
-          export KEY_ALIAS=$CM_KEY_ALIAS
-          export KEY_PASSWORD=$CM_KEY_PASSWORD
+          export KEYSTORE_PASSWORD=raha2026Secure
+          export KEY_ALIAS=raha_key
+          export KEY_PASSWORD=raha2026Secure
           cd artifacts/raha/android
           chmod +x gradlew
           ./gradlew bundleRelease --no-daemon
+          ls app/build/outputs/bundle/release/
           cp app/build/outputs/bundle/release/app-release.aab $CM_BUILD_DIR/raha-release.aab
 
     artifacts:
