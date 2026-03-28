@@ -45,7 +45,7 @@ workflows:
           export KEY_PASSWORD=$CM_KEY_PASSWORD
           cd artifacts/raha/android
           chmod +x gradlew
-          ./gradlew bundleRelease --no-daemon
+          ./gradlew bundleRelease --no-daemon --stacktrace 2>&1 | tail -100
 
     artifacts:
       - artifacts/raha/android/app/build/outputs/bundle/release/app-release.aab
