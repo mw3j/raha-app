@@ -99,7 +99,7 @@ jobs:
       - name: Grant Gradle execute permission
         run: chmod +x artifacts/raha/android/gradlew
 
-            - name: Decode Keystore
+      - name: Decode Keystore
         shell: bash
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
